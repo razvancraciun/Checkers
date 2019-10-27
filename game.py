@@ -1,3 +1,4 @@
+#!/usr/bin/python3.7
 import numpy as np
 from tabulate import tabulate
 

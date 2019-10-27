@@ -1,5 +1,5 @@
+#!/usr/bin/python3.7
 import game as g
-
 
 def main():
     state = g.initialize()
