@@ -11,24 +11,24 @@ def clear():
 
 def main():
     state = g.initialize()
-    while not g.is_final_state(state):
-        clear()
-        g.display(state)
-        
-        if state[1] == 1:
-            old_pos, new_pos = (0, 0), (0, 0)
-            try:
-                print('choose a piece to move:')
-                old_pos = (int(input('   row = ')), int(input('   col = ')))
-                print('choose where to move it:')
-                new_pos = (int(input('   row = ')), int(input('   col = ')))
-            except:
-                continue
-            if g.is_valid_transition(state, old_pos, new_pos):
-                state = g.transition(state, old_pos, new_pos)
-        else:
-            # lab 5 stuff goes here
-            pass
+    # while not g.is_final_state(state):
+    #     clear()
+    #     g.display(state)
+    #
+    #     if state[1] == 1:
+    #         old_pos, new_pos = (0, 0), (0, 0)
+    #         try:
+    #             print('choose a piece to move:')
+    #             old_pos = (int(input('   row = ')), int(input('   col = ')))
+    #             print('choose where to move it:')
+    #             new_pos = (int(input('   row = ')), int(input('   col = ')))
+    #         except:
+    #             continue
+    #         if g.is_valid_transition(state, old_pos, new_pos):
+    #             state = g.transition(state, old_pos, new_pos)
+    #     else:
+    #         pass
+    g.possible_transitions(state)
 
 if __name__ == '__main__':
     main()

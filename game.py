@@ -2,6 +2,7 @@
 
 # import numpy as np
 from tabulate import tabulate
+import copy
 
 EMPTY = 0
 PIECE = 1
@@ -37,13 +38,14 @@ def initialize():
     return (state, 1)
 
 def transition(state, old_pos, new_pos):
+    state = copy.deepcopy(state)
     old_row, old_col = old_pos
     new_row, new_col = new_pos
 
     # set the piece to its new location and clear the space it was in
     state[0][new_row][new_col] = state[0][old_row][old_col]
     state[0][old_row][old_col] = 0
-    
+
     sign = lambda x: (1, -1)[x < 0]
 
     # if the move is a jump
@@ -57,11 +59,45 @@ def transition(state, old_pos, new_pos):
     # return new board with the turn set to the opponent
     return (state[0], -1 if state[1] == 1 else 1)
 
+
 def is_valid_transition(state, old_pos, new_pos):
-    # TODO
+    old_row, old_col = old_pos
+    new_row, new_col = new_pos
+    if new_row < 0 or new_col < 0 or new_row > 7 or new_col > 7:
+        return False
+    if state[0][new_row][new_col] != EMPTY:
+        return False
+
     return True
 
 def possible_transitions(state):
+    return possible_transitions_normal(state) + possible_transitions_jump(state)
+
+def possible_transitions_normal(state):
+    result = []
+    sign = state[1]
+    for i in range(len(state[0])):
+        for j in range(len(state[0][i])):
+            old_pos = (i, j)
+            if state[0][i][j] == sign * PIECE:
+                new_pos1 = (i + sign * -1, j - 1)
+                new_pos2 = (i + sign * -1, j - 1)
+                if is_valid_transition(state, old_pos, new_pos1):
+                    result.append(transition(state, old_pos, new_pos1))
+                    display(result[-1])
+                elif is_valid_transition(state, old_pos, new_pos2):
+                    result.append(transition(state, old_pos, new_pos2))
+                    display(result[-1])
+            if state[0][i][j] == sign * DOUBLE:
+                new_pos3 = (i + sign, j - 1)
+                new_pos4 = (i + sign, j + 1)
+                if is_valid_transition(state, old_pos, new_pos3):
+                    result.append(transition(state, old_pos, new_pos3))
+                if is_valid_transition(state, old_pos, new_pos4):
+                    result.append(transition(state, old_pos, new_pos4))
+    return result
+
+def possible_transitions_jump(state):
     # TODO
     return []
 
@@ -91,6 +127,10 @@ def display(state):
                 result[row].append('●')
             elif el == -PIECE:
                 result[row].append('○')
+            elif el == DOUBLE:
+                result[row].append('●●')
+            elif el == -DOUBLE:
+                result[row].append('○○')
             else:
                 result[row].append('')
 
