@@ -43,19 +43,25 @@ def transition(state, old_pos, new_pos):
     old_row, old_col = old_pos
     new_row, new_col = new_pos
 
-    # set the piece to its new location and clear the space it was in
-    state[0][new_row][new_col] = state[0][old_row][old_col]
-    state[0][old_row][old_col] = 0
-
     sign = lambda x: (1, -1)[x < 0]
 
     # if the move is a jump
     if abs(new_row - old_row) == 2:
         row_diff, col_diff = new_row - old_row, new_col - old_col
         row_diff, col_diff = row_diff - sign(row_diff), col_diff - sign(col_diff)
-        # if the piece that was jumped upon was an enemy
-        if state[0][old_row + row_diff][old_col + col_diff] * state[1] < 0:
+        if enemy_piece(state, old_row + row_diff, old_col + row_diff):
             state[0][old_row + row_diff][old_col + col_diff] = 0
+
+        # set the piece to its new location and clear the space it was in
+        state[0][new_row][new_col] = state[0][old_row][old_col]
+        state[0][old_row][old_col] = 0
+
+        if possible_transitions_jump(state):
+            return state
+    else:
+        # set the piece to its new location and clear the space it was in
+        state[0][new_row][new_col] = state[0][old_row][old_col]
+        state[0][old_row][old_col] = 0
 
     # return new board with the turn set to the opponent
     return (state[0], -1 if state[1] == 1 else 1)
@@ -114,7 +120,8 @@ def possible_transitions_jump(state):
                     if not possible_jumps:
                         display(new_state)
                         result.append(new_state)
-                    else :
+                    else:
+                        result.append( (new_state[0], new_state[1] * -1) )
                         result += possible_jumps
                 if is_valid_transition(state, old_pos, new_pos2) and enemy_piece(state, jump_over2[0], jump_over2[1]):
                     new_state = transition(state, old_pos, new_pos2)
@@ -123,6 +130,7 @@ def possible_transitions_jump(state):
                         display(new_state)
                         result.append(new_state)
                     else:
+                        result.append( (new_state[0], new_state[1] * -1) )
                         result += possible_jumps
 
             if state[0][i][j] == sign * DOUBLE:
@@ -137,6 +145,7 @@ def possible_transitions_jump(state):
                         display(new_state)
                         result.append(new_state)
                     else:
+                        result.append( (new_state[0], new_state[1] * -1) )
                         result += possible_jumps
                 if is_valid_transition(state, old_pos, new_pos4) and enemy_piece(state, jump_over4[0], jump_over4[1]):
                     new_state = transition(state, old_pos, new_pos4)
@@ -145,6 +154,7 @@ def possible_transitions_jump(state):
                         display(new_state)
                         result.append(new_state)
                     else:
+                        result.append( (new_state[0], new_state[1] * -1) )
                         result += possible_jumps
     return result
 
