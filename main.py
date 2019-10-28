@@ -24,11 +24,13 @@ def main():
     #             new_pos = (int(input('   row = ')), int(input('   col = ')))
     #         except:
     #             continue
-    #         if g.is_valid_transition(state, old_pos, new_pos):
+    #         if g.is_valid_transition(state, old_pos, new_pos) and g.transition(state, old_pos, new_pos) in g.possible_transitions(state):
     #             state = g.transition(state, old_pos, new_pos)
     #     else:
     #         pass
     g.possible_transitions(state)
+    g.display(g.transition(state, (6, 3), (6,7)))
+
 
 if __name__ == '__main__':
     main()
