@@ -70,9 +70,17 @@ def transition(state, old_pos, new_pos):
 def is_valid_transition(state, old_pos, new_pos):
     old_row, old_col = old_pos
     new_row, new_col = new_pos
+    # bounds
     if new_row < 0 or new_col < 0 or new_row > 7 or new_col > 7:
         return False
+    # overlap
     if state[0][new_row][new_col] != EMPTY:
+        return False
+
+    # player moves his own piece
+    if state[1] == -1 and state[0][old_pos[0]][old_pos[1]] > 0:
+        return False
+    if state[1] == 1 and state[0][old_pos[0]][old_pos[1]] < 0:
         return False
 
     return True
