@@ -124,6 +124,17 @@ def is_final_state(state):
         return -1
     return 0
 
+# check the difference in pieces but special pieces are more important
+def heuristic(state):
+    result = 0
+    for i in range(BOARD_SIZE):
+        for j in range(BOARD_SIZE):
+            if abs(state[0][i][j]) == NPIECE:
+                result += state[0][i][j]
+            elif abs(state[0][i][j]) == SPIECE:
+                result += 2 * state[0][i][j]
+    return result
+
 # TODO: return (old_pos, new_pos) pairs instead of whole game boards
 def possible_transitions_normal(state):
     result = []
