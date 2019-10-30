@@ -83,7 +83,13 @@ def is_valid_transition(state, old_pos, new_pos):
     if abs(new_row - old_row) > 2:
         return False
 
-    # TODO if jumping check if the piece it jumped over is an enemy
+    # when the piece it jumped over should be an enemy
+    if abs(new_row - old_row) == 2:
+        sign = lambda x: (1, -1)[x < 0]
+        row_diff, col_diff = new_row - old_row, new_col - old_col
+        row_diff, col_diff = row_diff - sign(row_diff), col_diff - sign(col_diff)
+        if state[0][old_row + row_diff][old_col + col_diff] * state[1] >= 0:
+            return False
 
     return True
 
