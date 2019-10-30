@@ -1,63 +1,81 @@
 #!/usr/bin/python3.7
 
-# import numpy as np
 from tabulate import tabulate
-import copy
+from termcolor import colored
+from copy import deepcopy
+
+# The state of the game contains a 8×8 matrix representing the game board
+# Each slot on the board can either be:
+#       0 - if it is empty
+#   +1/-1 - if it is a normal piece
+#   +2/-2 - if it is a normal piece
+# The state also contains +1/-1 demending on what player must move on the current turn
+# +1 represents the white player
+# -1 represents the black player
+# The sign of any given piece on the board denotes its perspective owner
 
 EMPTY = 0
-PIECE = 1
-DOUBLE = 2
+NPIECE = 1
+SPIECE = 2
+BOARD_SIZE = 8
 
 def initialize():
     test_state = [
     [ 0, 0, 0, 0, 0, 0, 0, 0],
+    [ 0, 0, 0, 0, 0, 0, 0, 0],
+    [ 0, 0, 0, 0, 0, 0, 0, 0],
+    [ 0, 0, 0, 0, 0, 0, 0, 0],
+    [ 0, 0, 0, 0, 0, 0, 0, 0],
     [ 0, 0,-1, 0, 0, 0, 0, 0],
-    [ 0, 1, 0, 0, 0, 0, 0, 0],
-    [ 0, 0, 0, 0, 0, 0, 0, 0],
-    [ 0, 0, 0, 0, 0, 0, 0, 0],
-    [ 0, 0,-1, 0,-1, 0,-1, 0],
     [ 0, 0, 0, 2, 0, 0, 0, 0],
     [ 0, 0, 0, 0, 0, 0, 0, 0]
     ]
-    return (test_state, 1, None)
+    # return (test_state, 1)
 
     state = []
-    for i in range(8):
+    for i in range(BOARD_SIZE):
         state.append([])
         for j in range(8):
             if i < 3 and i % 2 == 0 and j % 2 == 1:
-                state[i].append(-PIECE)
+                state[i].append(-NPIECE)
             elif i < 3 and i % 2 == 1 and j % 2 == 0:
-                state[i].append(-PIECE)
+                state[i].append(-NPIECE)
             elif i > 4 and i % 2 == 0 and j % 2 == 1:
-                state[i].append(PIECE)
+                state[i].append(NPIECE)
             elif i > 4 and i % 2 == 1 and j % 2 == 0:
-                state[i].append(PIECE)
+                state[i].append(NPIECE)
             else:
                 state[i].append(EMPTY)
 
-    return (state, 1, None)
+    return (state, 1)
+
+def interpolate(pos1, pos2):
+    sign = lambda x: (1, -1)[x < 0]
+    idiff = pos2[0] - pos1[0] - sign(pos2[0] - pos1[0])
+    jdiff = pos2[1] - pos1[1] - sign(pos2[1] - pos1[1])
+    return (pos1[0] + idiff, pos1[1] + jdiff)
 
 def transition(state, old_pos, new_pos):
-    state = copy.deepcopy(state)
+    state = deepcopy(state)
     old_row, old_col = old_pos
     new_row, new_col = new_pos
 
-    # TODO transform PIECE to DOUBLE if it reaches the end
-
     # set the piece to its new location and clear the space it was in
-    state[0][new_row][new_col] = state[0][old_row][old_col]
+    # change piece to special piece if it reaches the end of the board
+    if state[1] == 1 and new_row == 0:
+        state[0][new_row][new_col] = SPIECE
+    elif state[1] == -1 and new_row == 7:
+        state[0][new_row][new_col] = -SPIECE
+    else:
+        state[0][new_row][new_col] = state[0][old_row][old_col]
     state[0][old_row][old_col] = 0
-
-    sign = lambda x: (1, -1)[x < 0]
 
     # if the move is a jump
     if abs(new_row - old_row) == 2:
-        row_diff, col_diff = new_row - old_row, new_col - old_col
-        row_diff, col_diff = row_diff - sign(row_diff), col_diff - sign(col_diff)
+        jump_row, jump_col = interpolate(old_pos, new_pos)
         # if the piece that was jumped upon was an enemy
-        if state[0][old_row + row_diff][old_col + col_diff] * state[1] < 0:
-            state[0][old_row + row_diff][old_col + col_diff] = 0
+        if state[0][jump_row][jump_col] * state[1] < 0:
+            state[0][jump_row][jump_col] = 0
 
     # return new board with the turn set to the opponent
     return (state[0], -1 if state[1] == 1 else 1)
@@ -66,102 +84,39 @@ def transition(state, old_pos, new_pos):
 def is_valid_transition(state, old_pos, new_pos):
     old_row, old_col = old_pos
     new_row, new_col = new_pos
-    # bounds
+    # must move within bounds of the board
     if new_row < 0 or new_col < 0 or new_row > 7 or new_col > 7:
         return False
-    # overlap
+    # must move to free space
     if state[0][new_row][new_col] != EMPTY:
         return False
-
-    # player moves his own piece
-    if state[1] == -1 and state[0][old_pos[0]][old_pos[1]] > 0:
+    # player must a piece and that piece must be his
+    if state[1] * state[0][old_pos[0]][old_pos[1]] <= 0:
         return False
-    if state[1] == 1 and state[0][old_pos[0]][old_pos[1]] < 0:
-        return False
-
-    # normal move or jump
+    # move must be normal or jump
     if abs(new_row - old_row) > 2:
         return False
 
-    # when the piece it jumped over should be an enemy
+    # there needs to be a piece for the jump to be performed
+    # the piece it jumped over needs to be an enemy
     if abs(new_row - old_row) == 2:
-        sign = lambda x: (1, -1)[x < 0]
-        row_diff, col_diff = new_row - old_row, new_col - old_col
-        row_diff, col_diff = row_diff - sign(row_diff), col_diff - sign(col_diff)
-        if state[0][old_row + row_diff][old_col + col_diff] * state[1] >= 0:
+        jump_row, jump_col = interpolate(old_pos, new_pos)
+        # if the piece that was jumped upon was an enemy
+        if state[0][jump_row][jump_col] * state[1] >= 0:
             return False
 
     return True
 
-def possible_transitions(state):
-    return possible_transitions_normal(state) + possible_transitions_jump(state)
-
-def possible_transitions_normal(state):
-    result = []
-    sign = state[1]
-    for i in range(len(state[0])):
-        for j in range(len(state[0][i])):
-            old_pos = (i, j)
-            if state[0][i][j] == sign * PIECE or state[0][i][j] == sign * DOUBLE:
-                new_pos1 = (i + sign * -1, j - 1)
-                new_pos2 = (i + sign * -1, j + 1)
-                if is_valid_transition(state, old_pos, new_pos1):
-                    result.append(transition(state, old_pos, new_pos1))
-                if is_valid_transition(state, old_pos, new_pos2):
-                    result.append(transition(state, old_pos, new_pos2))
-            if state[0][i][j] == sign * DOUBLE:
-                new_pos3 = (i + sign, j - 1)
-                new_pos4 = (i + sign, j + 1)
-                if is_valid_transition(state, old_pos, new_pos3):
-                    result.append(transition(state, old_pos, new_pos3))
-                if is_valid_transition(state, old_pos, new_pos4):
-                    result.append(transition(state, old_pos, new_pos4))
-    return result
-
-def possible_transitions_jump(state):
-    result = []
-    for i in range(len(state[0])):
-        for j in range(len(state[0][i])):
-            result += possible_jumps(state, (i,j))
-    return result
-
-
-def possible_jumps(state, piece):
-    result = []
-    sign = state[1]
-    i,j = piece
-    if state[0][i][j] == sign * PIECE or state[0][i][j] == sign * DOUBLE:
-        new_pos1 = (i + sign * -2, j - 2)
-        jump_over1 = (i + sign * -1, j - 1)
-        new_pos2 = (i + sign * -2, j + 2)
-        jump_over2 = (i + sign * -1, j + 1)
-        if is_valid_transition(state, piece, new_pos1):
-            result.append(transition(state, piece, new_pos1))
-
-        if is_valid_transition(state, piece, new_pos2):
-            result.append(transition(state, piece, new_pos2))
-
-    if state[0][i][j] == sign * DOUBLE:
-        new_pos3 = (i + sign * 2, j - 2)
-        jump_over3 = (i + sign, j - 1)
-        new_pos4 = (i + sign * 2, j + 2)
-        jump_over4 = (i + sign, j + 1)
-        if is_valid_transition(state, piece, new_pos3):
-            result.append(transition(state, piece, new_pos1))
-        if is_valid_transition(state, piece, new_pos4):
-            result.append(transition(state, piece, new_pos1))
-    return result
-
 #  0 - if the state is not final
-#  1 - if white won
+# +1 - if white won
 # -1 - if black won
 def is_final_state(state):
     white, black = 0, 0
     for row in state[0]:
         for cell in row:
-            if cell == PIECE or cell == DOUBLE:
+            if cell == NPIECE or cell == SPIECE:
                 white += 1
-            elif cell == -PIECE or cell == -DOUBLE:
+            elif cell == -NPIECE or cell == -SPIECE:
                 black += 1
     if white > 0 and black == 0:
         return 1
@@ -169,21 +124,73 @@ def is_final_state(state):
         return -1
     return 0
 
-def display(state):
+# TODO: return (old_pos, new_pos) pairs instead of whole game boards
+def possible_transitions_normal(state):
+    result = []
+    for i in range(BOARD_SIZE):
+        for j in range(BOARD_SIZE):
+            pos = (i, j)
+            # check front diagonal move options
+            if state[0][i][j] == state[1] * NPIECE or state[0][i][j] == state[1] * SPIECE:
+                trans_pos = (i - state[1], j - 1)
+                if is_valid_transition(state, pos, trans_pos):
+                    result.append(transition(state, pos, trans_pos))
+                trans_pos = (i - state[1], j + 1)
+                if is_valid_transition(state, pos, trans_pos):
+                    result.append(transition(state, pos, trans_pos))
+            # check back diagonal move options if piece is special
+            if state[0][i][j] == state[1] * SPIECE:
+                trans_pos = (i + state[1], j - 1)
+                if is_valid_transition(state, pos, trans_pos):
+                    result.append(transition(state, pos, trans_pos))
+                trans_pos = (i + state[1], j + 1)
+                if is_valid_transition(state, pos, trans_pos):
+                    result.append(transition(state, pos, trans_pos))
+    return result
+
+# TODO: return (old_pos, new_pos) pairs instead of whole game boards
+def possible_transitions_jump(state):
+    result = []
+    for i in range(BOARD_SIZE):
+        for j in range(BOARD_SIZE):
+            pos = (i, j)
+            # check front diagonal jump options
+            if state[0][i][j] == state[1] * NPIECE or state[0][i][j] == state[1] * SPIECE:
+                trans_pos = (i - 2 * state[1], j - 2)
+                if is_valid_transition(state, pos, trans_pos):
+                    result.append(transition(state, pos, trans_pos))
+                trans_pos = (i - 2 * state[1], j + 2)
+                if is_valid_transition(state, pos, trans_pos):
+                    result.append(transition(state, pos, trans_pos))
+            # check back diagonal jump options if piece is special
+            if state[0][i][j] == state[1] * SPIECE:
+                trans_pos = (i + 2 * state[1], j - 2)
+                if is_valid_transition(state, pos, trans_pos):
+                    result.append(transition(state, pos, trans_pos))
+                trans_pos = (i + 2 * state[1], j + 2)
+                if is_valid_transition(state, pos, trans_pos):
+                    result.append(transition(state, pos, trans_pos))
+    return result
+
+# TODO: return (old_pos, new_pos) pairs instead of whole game boards
+def possible_transitions(state):
+    return possible_transitions_normal(state) + possible_transitions_jump(state)
+
+def display_board(state):
     result = []
     for row in range(len(state[0])):
         result.append([])
         for el in state[0][row]:
-            if el == PIECE:
-                result[row].append('●')
-            elif el == -PIECE:
-                result[row].append('○')
-            elif el == DOUBLE:
-                result[row].append('●●')
-            elif el == -DOUBLE:
-                result[row].append('○○')
+            if el == NPIECE:
+                result[row].append(colored('⬤', 'white'))
+            elif el == -NPIECE:
+                result[row].append(colored('⬤', 'grey'))
+            elif el == SPIECE:
+                result[row].append(colored('⬤⬤', 'white'))
+            elif el == -SPIECE:
+                result[row].append(colored('⬤⬤', 'grey'))
             else:
                 result[row].append('')
 
-    print(f'{"white" if state[1] == 1 else "black"}s turn:')
+    print(f'{colored("⬤ ", "white") + "White" if state[1] == 1 else colored("⬤ ", "grey") + "Black"}s turn:')
     print(tabulate(result, headers = range(8), showindex='always', tablefmt='fancy_grid'))
