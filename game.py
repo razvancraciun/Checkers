@@ -11,15 +11,15 @@ DOUBLE = 2
 def initialize():
     test_state = [
     [ 0, 0, 0, 0, 0, 0, 0, 0],
-    [ 0, 0, 0, 0, 0, 0, 0, 0],
-    [ 0, 0, 0, 0, 0, 0, 0, 0],
+    [ 0, 0,-1, 0, 0, 0, 0, 0],
+    [ 0, 1, 0, 0, 0, 0, 0, 0],
     [ 0, 0, 0, 0,-1, 0, 0, 0],
     [ 0, 0, 0, 0, 0, 0, 0, 0],
     [ 0, 0,-1, 0,-1, 0,-1, 0],
     [ 0, 0, 0, 2, 0, 0, 0, 0],
     [ 0, 0, 0, 0, 0, 0, 0, 0]
     ]
-    return (test_state, 1)
+    return (test_state, 1, None)
 
     state = []
     for i in range(8):
@@ -36,7 +36,7 @@ def initialize():
             else:
                 state[i].append(EMPTY)
 
-    return (state, 1)
+    return (state, 1, None)
 
 def transition(state, old_pos, new_pos):
     state = copy.deepcopy(state)
@@ -55,7 +55,7 @@ def transition(state, old_pos, new_pos):
         # set the piece to its new location and clear the space it was in
         state[0][new_row][new_col] = state[0][old_row][old_col]
         state[0][old_row][old_col] = 0
-
+        state = (state[0], state[1], (new_row,new_col))
         if possible_transitions_jump(state):
             return state
     else:
@@ -64,7 +64,7 @@ def transition(state, old_pos, new_pos):
         state[0][old_row][old_col] = 0
 
     # return new board with the turn set to the opponent
-    return (state[0], -1 if state[1] == 1 else 1)
+    return (state[0], -1 if state[1] == 1 else 1, None)
 
 
 def is_valid_transition(state, old_pos, new_pos):
@@ -83,9 +83,15 @@ def is_valid_transition(state, old_pos, new_pos):
     if state[1] == 1 and state[0][old_pos[0]][old_pos[1]] < 0:
         return False
 
+    # if a jump started move the same piece
+    if state[2] != None and old_pos != state[2]:
+        return False
+
     return True
 
 def possible_transitions(state):
+    if state[2] != None:
+        return possible_transitions_jump(state)
     return possible_transitions_normal(state) + possible_transitions_jump(state)
 
 def possible_transitions_normal(state):
@@ -141,12 +147,12 @@ def possible_transitions_jump(state):
 def further_jumps(state, old_pos, new_pos):
     result = []
     new_state = transition(state, old_pos, new_pos)
-    possible_jumps =  possible_transitions_jump( (new_state[0], new_state[1] * -1) )
+    possible_jumps =  possible_transitions_jump( (new_state[0], new_state[1] * -1, new_state[2]) )
     if not possible_jumps:
         display(new_state)
         result.append(new_state)
     else:
-        result.append( (new_state[0], new_state[1] * -1) )
+        result.append( (new_state[0], new_state[1] * -1, new_state[2]) )
         result += possible_jumps
     return result
 
