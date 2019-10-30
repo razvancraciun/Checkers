@@ -12,10 +12,11 @@ def clear():
 def main():
     state = g.initialize()
     while not g.is_final_state(state):
-        clear()
+        # clear()
         g.display(state)
-
         if state[1] == 1:
+            for t in g.possible_transitions_jump(state):
+                g.display(t)
             old_pos, new_pos = (0, 0), (0, 0)
             try:
                 print('choose a piece to move:')
