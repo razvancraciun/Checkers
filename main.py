@@ -15,8 +15,6 @@ def main():
         # clear()
         g.display(state)
         if state[1] == 1:
-            for t in g.possible_transitions_jump(state):
-                g.display(t)
             old_pos, new_pos = (0, 0), (0, 0)
             try:
                 print('choose a piece to move:')

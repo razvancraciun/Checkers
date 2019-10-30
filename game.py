@@ -43,27 +43,24 @@ def transition(state, old_pos, new_pos):
     old_row, old_col = old_pos
     new_row, new_col = new_pos
 
+    # TODO transform PIECE to DOUBLE if it reaches the end
+
+    # set the piece to its new location and clear the space it was in
+    state[0][new_row][new_col] = state[0][old_row][old_col]
+    state[0][old_row][old_col] = 0
+
     sign = lambda x: (1, -1)[x < 0]
 
     # if the move is a jump
     if abs(new_row - old_row) == 2:
         row_diff, col_diff = new_row - old_row, new_col - old_col
         row_diff, col_diff = row_diff - sign(row_diff), col_diff - sign(col_diff)
-        state[0][old_row + row_diff][old_col + col_diff] = 0
-
-        # set the piece to its new location and clear the space it was in
-        state[0][new_row][new_col] = state[0][old_row][old_col]
-        state[0][old_row][old_col] = 0
-        state = (state[0], state[1], (new_row,new_col))
-        if possible_jumps(state, new_pos):
-            return state
-    else:
-        # set the piece to its new location and clear the space it was in
-        state[0][new_row][new_col] = state[0][old_row][old_col]
-        state[0][old_row][old_col] = 0
+        # if the piece that was jumped upon was an enemy
+        if state[0][old_row + row_diff][old_col + col_diff] * state[1] < 0:
+            state[0][old_row + row_diff][old_col + col_diff] = 0
 
     # return new board with the turn set to the opponent
-    return (state[0], -1 if state[1] == 1 else 1, None)
+    return (state[0], -1 if state[1] == 1 else 1)
 
 
 def is_valid_transition(state, old_pos, new_pos):
@@ -82,37 +79,37 @@ def is_valid_transition(state, old_pos, new_pos):
     if state[1] == 1 and state[0][old_pos[0]][old_pos[1]] < 0:
         return False
 
-    # if a jump started move the same piece
-    if state[2] != None and old_pos != state[2]:
+    # normal move or jump
+    if abs(new_row - old_row) > 2:
         return False
+
+    # TODO if jumping check if the piece it jumped over is an enemy
 
     return True
 
 def possible_transitions(state):
-    if state[2] != None:
-        return possible_jumps(state, state[2])
     return possible_transitions_normal(state) + possible_transitions_jump(state)
 
 def possible_transitions_normal(state):
     result = []
-    # sign = state[1]
-    # for i in range(len(state[0])):
-    #     for j in range(len(state[0][i])):
-    #         old_pos = (i, j)
-    #         if state[0][i][j] == sign * PIECE or state[0][i][j] == sign * DOUBLE:
-    #             new_pos1 = (i + sign * -1, j - 1)
-    #             new_pos2 = (i + sign * -1, j + 1)
-    #             if is_valid_transition(state, old_pos, new_pos1):
-    #                 result.append(transition(state, old_pos, new_pos1))
-    #             if is_valid_transition(state, old_pos, new_pos2):
-    #                 result.append(transition(state, old_pos, new_pos2))
-    #         if state[0][i][j] == sign * DOUBLE:
-    #             new_pos3 = (i + sign, j - 1)
-    #             new_pos4 = (i + sign, j + 1)
-    #             if is_valid_transition(state, old_pos, new_pos3):
-    #                 result.append(transition(state, old_pos, new_pos3))
-    #             if is_valid_transition(state, old_pos, new_pos4):
-    #                 result.append(transition(state, old_pos, new_pos4))
+    sign = state[1]
+    for i in range(len(state[0])):
+        for j in range(len(state[0][i])):
+            old_pos = (i, j)
+            if state[0][i][j] == sign * PIECE or state[0][i][j] == sign * DOUBLE:
+                new_pos1 = (i + sign * -1, j - 1)
+                new_pos2 = (i + sign * -1, j + 1)
+                if is_valid_transition(state, old_pos, new_pos1):
+                    result.append(transition(state, old_pos, new_pos1))
+                if is_valid_transition(state, old_pos, new_pos2):
+                    result.append(transition(state, old_pos, new_pos2))
+            if state[0][i][j] == sign * DOUBLE:
+                new_pos3 = (i + sign, j - 1)
+                new_pos4 = (i + sign, j + 1)
+                if is_valid_transition(state, old_pos, new_pos3):
+                    result.append(transition(state, old_pos, new_pos3))
+                if is_valid_transition(state, old_pos, new_pos4):
+                    result.append(transition(state, old_pos, new_pos4))
     return result
 
 def possible_transitions_jump(state):
@@ -127,36 +124,27 @@ def possible_jumps(state, piece):
     result = []
     sign = state[1]
     i,j = piece
-    print('possible_jumps', state[0][i][j])
     if state[0][i][j] == sign * PIECE or state[0][i][j] == sign * DOUBLE:
         new_pos1 = (i + sign * -2, j - 2)
         jump_over1 = (i + sign * -1, j - 1)
         new_pos2 = (i + sign * -2, j + 2)
         jump_over2 = (i + sign * -1, j + 1)
-        if is_valid_transition(state, piece, new_pos1) and enemy_piece(state, jump_over1[0], jump_over1[1]):
-            result += possible_jumps(state, new_pos1)
+        if is_valid_transition(state, piece, new_pos1):
+            result.append(transition(state, piece, new_pos1))
 
-        if is_valid_transition(state, piece, new_pos2) and enemy_piece(state, jump_over2[0], jump_over2[1]):
-            result += possible_jumps(state, new_pos2)
+        if is_valid_transition(state, piece, new_pos2):
+            result.append(transition(state, piece, new_pos2))
 
     if state[0][i][j] == sign * DOUBLE:
         new_pos3 = (i + sign * 2, j - 2)
         jump_over3 = (i + sign, j - 1)
         new_pos4 = (i + sign * 2, j + 2)
         jump_over4 = (i + sign, j + 1)
-        if is_valid_transition(state, piece, new_pos3) and enemy_piece(state, jump_over3[0], jump_over3[1]):
-            result += possible_jumps(state, new_pos3)
-        if is_valid_transition(state, piece, new_pos4) and enemy_piece(state, jump_over4[0], jump_over4[1]):
-            result += possible_jumps(state, new_pos4)
+        if is_valid_transition(state, piece, new_pos3):
+            result.append(transition(state, piece, new_pos1))
+        if is_valid_transition(state, piece, new_pos4):
+            result.append(transition(state, piece, new_pos1))
     return result
-
-def enemy_piece(state, row, col):
-    if state[1] == 1 and state[0][row][col] < 0:
-        return True
-    elif state[1] == -1 and state[0][row][col] > 0:
-        return True
-    return False
-
 
 #  0 - if the state is not final
 #  1 - if white won
