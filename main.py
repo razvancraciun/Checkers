@@ -19,7 +19,7 @@ MOVE_ERROR_MSG = colored('Move is invalid!', 'red') + ' Try another move.'
 # display winner
 def main():
     state, msg = g.initialize(), ''
-    while not g.is_final_state(state):
+    while g.is_final_state(state) == 0:
         # display
         clear()
         print(msg)
@@ -48,6 +48,12 @@ def main():
             possible_states = list(filter(lambda s: g.heuristic(s) == min_heuristic, possible_states))
             
             state = possible_states[randint(0, len(possible_states) - 1)]
+    # end game
+    clear()
+    if (g.is_final_state(state) == 1):
+        print(colored('⬤ ', 'white') + 'White won!')
+    else:
+        print(colored('⬤ ', 'grey') + 'Black won!')
 
 if __name__ == '__main__':
     main()
