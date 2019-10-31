@@ -25,12 +25,12 @@ def initialize():
     [ 0, 0, 0, 0, 0, 0, 0, 0],
     [ 0, 0, 0, 0, 0, 0, 0, 0],
     [ 0, 0, 0, 0, 0, 0, 0, 0],
-    [ 0, 0, 0, 0, 0, 0, 0, 0],
+    [ 0, 0, 0, 0, 1, 0, 0, 0],
     [ 0, 0,-1, 0, 0, 0, 0, 0],
     [ 0, 0, 0, 2, 0, 0, 0, 0],
     [ 0, 0, 0, 0, 0, 0, 0, 0]
     ]
-    # return (test_state, 1)
+    return (test_state, 1)
 
     state = []
     for i in range(BOARD_SIZE):
@@ -90,13 +90,15 @@ def is_valid_transition(state, old_pos, new_pos):
     # must move to free space
     if state[0][new_row][new_col] != EMPTY:
         return False
-    # player must a piece and that piece must be his
-    if state[1] * state[0][old_pos[0]][old_pos[1]] <= 0:
+    # player must move a piece and that piece must be his
+    if state[1] * state[0][old_row][old_col] <= 0:
         return False
     # move must be normal or jump
     if abs(new_row - old_row) > 2:
         return False
-
+    # a normal piece must always move forward
+    if abs(state[0][old_row][old_col]) == NPIECE and (new_row - old_row) * state[1] > 0:
+        return False
     # there needs to be a piece for the jump to be performed
     # the piece it jumped over needs to be an enemy
     if abs(new_row - old_row) == 2:
