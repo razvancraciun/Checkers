@@ -125,6 +125,7 @@ def is_final_state(state):
     return 0
 
 # check the difference in pieces but special pieces are more important
+# white will maximise, black will minimise
 def heuristic(state):
     result = 0
     for i in range(BOARD_SIZE):
@@ -135,7 +136,6 @@ def heuristic(state):
                 result += 2 * state[0][i][j]
     return result
 
-# TODO: return (old_pos, new_pos) pairs instead of whole game boards
 def possible_transitions_normal(state):
     result = []
     for i in range(BOARD_SIZE):
@@ -145,21 +145,20 @@ def possible_transitions_normal(state):
             if state[0][i][j] == state[1] * NPIECE or state[0][i][j] == state[1] * SPIECE:
                 trans_pos = (i - state[1], j - 1)
                 if is_valid_transition(state, pos, trans_pos):
-                    result.append(transition(state, pos, trans_pos))
+                    result.append((pos, trans_pos))
                 trans_pos = (i - state[1], j + 1)
                 if is_valid_transition(state, pos, trans_pos):
-                    result.append(transition(state, pos, trans_pos))
+                    result.append((pos, trans_pos))
             # check back diagonal move options if piece is special
             if state[0][i][j] == state[1] * SPIECE:
                 trans_pos = (i + state[1], j - 1)
                 if is_valid_transition(state, pos, trans_pos):
-                    result.append(transition(state, pos, trans_pos))
+                    result.append((pos, trans_pos))
                 trans_pos = (i + state[1], j + 1)
                 if is_valid_transition(state, pos, trans_pos):
-                    result.append(transition(state, pos, trans_pos))
+                    result.append((pos, trans_pos))
     return result
 
-# TODO: return (old_pos, new_pos) pairs instead of whole game boards
 def possible_transitions_jump(state):
     result = []
     for i in range(BOARD_SIZE):
@@ -169,21 +168,20 @@ def possible_transitions_jump(state):
             if state[0][i][j] == state[1] * NPIECE or state[0][i][j] == state[1] * SPIECE:
                 trans_pos = (i - 2 * state[1], j - 2)
                 if is_valid_transition(state, pos, trans_pos):
-                    result.append(transition(state, pos, trans_pos))
+                    result.append((pos, trans_pos))
                 trans_pos = (i - 2 * state[1], j + 2)
                 if is_valid_transition(state, pos, trans_pos):
-                    result.append(transition(state, pos, trans_pos))
+                    result.append((pos, trans_pos))
             # check back diagonal jump options if piece is special
             if state[0][i][j] == state[1] * SPIECE:
                 trans_pos = (i + 2 * state[1], j - 2)
                 if is_valid_transition(state, pos, trans_pos):
-                    result.append(transition(state, pos, trans_pos))
+                    result.append((pos, trans_pos))
                 trans_pos = (i + 2 * state[1], j + 2)
                 if is_valid_transition(state, pos, trans_pos):
-                    result.append(transition(state, pos, trans_pos))
+                    result.append((pos, trans_pos))
     return result
 
-# TODO: return (old_pos, new_pos) pairs instead of whole game boards
 def possible_transitions(state):
     return possible_transitions_normal(state) + possible_transitions_jump(state)
 
