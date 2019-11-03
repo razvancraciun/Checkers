@@ -53,7 +53,7 @@ def main():
          2: lambda: print(colored('⬤ ', 'white') + 'White is blocked. It\'s a draw!'),
         -2: lambda: print(colored('⬤ ', 'grey')  + 'Black is blocked. It\'s a draw!')
     }
-    switch.get(g.is_final_state(state))()
+    switch[g.is_final_state(state)]()
 
 if __name__ == '__main__':
     main()
