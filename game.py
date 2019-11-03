@@ -22,13 +22,13 @@ BOARD_SIZE = 8
 def initialize():
     test_state = [
     [ 0, 0, 0, 0, 0, 0, 0, 0],
-    [ 0, 0, 0, 0, 0, 0, 0, 0],
-    [ 0, 0, 0, 0, 0, 0, 0, 0],
-    [ 0, 0, 0, 0, 0, 0, 0, 0],
-    [ 0, 0, 0, 0, 0, 0, 0, 0],
-    [ 0, 0,-1, 0, 0, 0, 0, 0],
-    [ 0, 0, 0, 2, 0, 0, 0, 0],
-    [ 0, 0, 0, 0, 0, 0, 0, 0]
+    [ 0, 0,-1, 0,-1, 0,-1, 0],
+    [ 0,-1, 0,-1, 0,-1, 0,-1],
+    [-1, 0,-1, 0,-1, 0,-1, 0],
+    [ 0, 1, 0, 1, 0, 1, 0, 1],
+    [ 1, 0, 0, 0, 1, 0, 1, 0],
+    [ 0, 1, 0, 1, 0, 1, 0, 0],
+    [ 0, 0, 1, 0, 0, 0, 0, 0]
     ]
     # return (test_state, 1)
 
@@ -111,7 +111,11 @@ def is_valid_transition(state, old_pos, new_pos):
 #  0 - if the state is not final
 # +1 - if white won
 # -1 - if black won
+# +2 - if white is blocked
+# -2 - if black is blocked
 def is_final_state(state):
+    if len(possible_transitions(state)) == 0:
+        return 2 * state[1]
     white, black = 0, 0
     for row in state[0]:
         for cell in row:
