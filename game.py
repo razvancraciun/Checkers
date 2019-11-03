@@ -80,7 +80,6 @@ def transition(state, old_pos, new_pos):
     # return new board with the turn set to the opponent
     return (state[0], -1 if state[1] == 1 else 1)
 
-
 def is_valid_transition(state, old_pos, new_pos):
     old_row, old_col = old_pos
     new_row, new_col = new_pos
