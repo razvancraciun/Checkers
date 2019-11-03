@@ -16,8 +16,6 @@ def clear():
 INPUT_ERROR_MSG = colored('Input is invalid!', 'red') + ' Try again.'
 MOVE_ERROR_MSG = colored('Move is invalid!', 'red') + ' Try another move.'
 
-# TODO: actual computer login (choose transition based on heuristic)
-# display winner
 def main():
     state, msg = g.initialize(), ''
     while g.is_final_state(state) == 0:
@@ -48,10 +46,14 @@ def main():
             state = g.transition(state, t[0], t[1])
     # end game
     clear()
-    if (g.is_final_state(state) == 1):
-        print(colored('⬤ ', 'white') + 'White won!')
-    else:
-        print(colored('⬤ ', 'grey') + 'Black won!')
+    g.display_board(state)
+    switch = {
+         1: lambda: print(colored('⬤ ', 'white') + 'White won!'),
+        -1: lambda: print(colored('⬤ ', 'grey')  + 'Black won!'),
+         2: lambda: print(colored('⬤ ', 'white') + 'White is blocked. It\'s a draw!'),
+        -2: lambda: print(colored('⬤ ', 'grey')  + 'Black is blocked. It\'s a draw!')
+    }
+    switch.get(g.is_final_state(state))()
 
 if __name__ == '__main__':
     main()
