@@ -1,20 +1,21 @@
 import game as g
 from util import to_tuple
 
-
-# def minimax(state, max = True, depth = 0, max_depth = 5):
-#     val = {}
-#     if depth >= max_depth or g.is_final_state(state) != 0:
-#         return (None, g.heuristic(state))
-#     for transition in g.possible_transitions(state):
-#         old_pos,new_pos = transition
-#         new_state = g.transition(state, old_pos, new_pos)
-#         _, val[to_tuple(state)] = minimax(new_state, not max, depth+1, max_depth)
-
-    # if max:
-    #     # return (starea cu val maxim din tranzitiile posibile, valoarea maxima)
-    #     return (g.possible_transitions(state)[val.argmax()])
-
+def minimax(state, maximise = False, depth = 0, max_depth = 2):
+    if depth >= max_depth or g.is_final_state(state) != 0:
+        return (None, g.heuristic(state))
+    
+    hs = []
+    for t in g.possible_transitions(state):
+        new_state = g.transition(state, t[0], t[1])
+        hs.append((t, minimax(new_state, not maximise, depth + 1, max_depth)[1]))
+    
+    if maximise:
+        result = max(hs, key = lambda item: item[1])
+        return result
+    else:
+        result = min(hs, key = lambda item: item[1])
+        return result
 
 def minimax_it(state, max_depth = 5):
     vals = {}
@@ -34,8 +35,6 @@ def minimax_it(state, max_depth = 5):
                 vals[hash(new_state)] = g.heuristic(current)
                 # here we have the values for all the states on the last level
     #TODO propagate values up the tree
-
-
 
 def hash(state):
     pow = 0

@@ -44,11 +44,8 @@ def main():
             else:
                 msg = MOVE_ERROR_MSG
         else:
-            possible_states = [g.transition(state, t[0], t[1]) for t in g.possible_transitions(state)]
-            min_heuristic = min([g.heuristic(s) for s in possible_states])
-            possible_states = list(filter(lambda s: g.heuristic(s) == min_heuristic, possible_states))
-
-            state = possible_states[randint(0, len(possible_states) - 1)]
+            t = s.minimax(state)[0]
+            state = g.transition(state, t[0], t[1])
     # end game
     clear()
     if (g.is_final_state(state) == 1):
