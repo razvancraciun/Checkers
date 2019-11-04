@@ -16,38 +16,41 @@ def minimax(state, maximise = False, depth = 0, max_depth = 5):
         result = min(hs, key = lambda item: item[1])
         return result
 
+ALPHA = float('-inf')
+BETA = float('-inf')
 
-
-def maximum_value(state, alpha = float('-inf'), beta = float('-inf'), depth = 0, max_depth = 5):
+def maximum_value(state, depth = 0, max_depth = 5):
+    global ALPHA, BETA
     if depth >= max_depth or g.is_final_state(state) != 0:
         return (None, g.heuristic(state)) # here
     max_val = float('-inf')
     action = None
     for t in g.possible_transitions(state):
         succ = g.transition(state, t[0], t[1])
-        act,val = minimum_value(succ, alpha, beta, depth + 1, max_depth)
+        act,val = minimum_value(succ, depth + 1, max_depth)
         if max_val < val:
             max_val = val
             action = act
-        if max_val >= beta:
+        if max_val >= BETA:
             return (action, max_val)
-        alpha = max(max_val, alfa)
+        ALPHA = max(max_val, ALPHA)
     return (action, max_val)
 
 
 
-def minimum_value(state, alpha = float('-inf'), beta = float('-inf'), depth = 0, max_depth = 5):
+def minimum_value(state, depth = 0, max_depth = 5):
+    global ALPHA, BETA
     if depth >= max_depth or g.is_final_state(state) != 0:
         return (None, g.heuristic(state)) # aand here
     val_min = float('inf')
     action = None
     for t in g.possible_transitions(state):
         succ = g.transition(state, t[0], t[1])
-        act, val = maximum_value(succ, alpha, beta, depth + 1, max_depth)
+        act, val = maximum_value(succ, depth + 1, max_depth)
         if val_min > val:
             val_min = val_min
             action = act
-        if alpha >= val_min:
+        if ALPHA >= val_min:
             return (action, val_min)
-        beta = min(val_min, beta)
+        BETA = min(val_min, BETA)
     return (action, val_min)
