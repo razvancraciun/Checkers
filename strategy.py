@@ -1,15 +1,14 @@
 import game as g
-from util import to_tuple
 
-def minimax(state, maximise = False, depth = 0, max_depth = 2):
+def minimax(state, maximise = False, depth = 0, max_depth = 5):
     if depth >= max_depth or g.is_final_state(state) != 0:
         return (None, g.heuristic(state))
-    
+
     hs = []
     for t in g.possible_transitions(state):
         new_state = g.transition(state, t[0], t[1])
         hs.append((t, minimax(new_state, not maximise, depth + 1, max_depth)[1]))
-    
+
     if maximise:
         result = max(hs, key = lambda item: item[1])
         return result
@@ -17,34 +16,38 @@ def minimax(state, maximise = False, depth = 0, max_depth = 2):
         result = min(hs, key = lambda item: item[1])
         return result
 
-def minimax_it(state, max_depth = 5):
-    vals = {}
-    depth = {hash(state) : 0}
-    parent = { hash(state) : None }
-    states = [state]
-    while states:
-        #TODO add visited check
-        current = states.pop()
-        possible_transitions = g.possible_transitions(current)
-        possible_transitions = [transition for transition in possible_transitions if not g.transition(current, transition[0], transition[1]) in states]
-        for transition in g.possible_transitions(current):
-            new_state = g.transition(current, old_pos, new_pos)
-            depth[hash(new_state)] = depth[hash(current)] + 1
-            parent[hash(new_state)] = current
-            if depth[hash(new_state)] >= max_depth or g.is_final_state(new_state) != 0:
-                vals[hash(new_state)] = g.heuristic(current)
-                # here we have the values for all the states on the last level
-    #TODO propagate values up the tree
 
-def hash(state):
-    pow = 0
-    conf1 = 0
-    conf2 = 0
-    for row in state[0]:
-        for el in row:
-            if el > 0:
-                conf1 += 2**pow
-            else:
-                conf2 += 2**pow
-            pow += 1
-    return (conf1, conf2, state[1])
+
+def maximum_value(state, alpha = float('-inf'), beta = float('-inf'), depth = 0, max_depth = 5):
+    if depth >= max_depth or g.is_final_state(state) != 0:
+        return (None, g.heuristic(state)) # here
+    max_val = float('-inf')
+    action = None
+    for t in g.possible_transitions(state):
+        succ = g.transition(state, t[0], t[1])
+        act,val = minimum_value(succ, alpha, beta, depth + 1, max_depth)
+        if max_val < val:
+            max_val = val
+            action = act
+        if max_val >= beta:
+            return (action, max_val)
+        alpha = max(max_val, alfa)
+    return (action, max_val)
+
+
+
+def minimum_value(state, alpha = float('-inf'), beta = float('-inf'), depth = 0, max_depth = 5):
+    if depth >= max_depth or g.is_final_state(state) != 0:
+        return (None, g.heuristic(state)) # aand here
+    val_min = float('inf')
+    action = None
+    for t in g.possible_transitions(state):
+        succ = g.transition(state, t[0], t[1])
+        act, val = maximum_value(succ, alpha, beta, depth + 1, max_depth)
+        if val_min > val:
+            val_min = val_min
+            action = act
+        if alpha >= val_min:
+            return (action, val_min)
+        beta = min(val_min, beta)
+    return (action, val_min)

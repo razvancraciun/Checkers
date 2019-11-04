@@ -28,19 +28,21 @@ def main():
             sleep(1)
         # game logic
         if state[1] == 1:
-            old_pos, new_pos = (0, 0), (0, 0)
-            try:
-                print('choose a piece to move:')
-                old_pos = (int(input('   row = ')), int(input('   col = ')))
-                print('choose where to move it:')
-                new_pos = (int(input('   row = ')), int(input('   col = ')))
-            except:
-                msg = INPUT_ERROR_MSG
-                continue
-            if g.is_valid_transition(state, old_pos, new_pos):
-                state = g.transition(state, old_pos, new_pos)
-            else:
-                msg = MOVE_ERROR_MSG
+            # old_pos, new_pos = (0, 0), (0, 0)
+            # try:
+            #     print('choose a piece to move:')
+            #     old_pos = (int(input('   row = ')), int(input('   col = ')))
+            #     print('choose where to move it:')
+            #     new_pos = (int(input('   row = ')), int(input('   col = ')))
+            # except:
+            #     msg = INPUT_ERROR_MSG
+            #     continue
+            # if g.is_valid_transition(state, old_pos, new_pos):
+            #     state = g.transition(state, old_pos, new_pos)
+            # else:
+            #     msg = MOVE_ERROR_MSG
+            t = s.maximum_value(state)[0]
+            state = g.transition(state, t[0], t[1])
         else:
             t = s.minimax(state)[0]
             state = g.transition(state, t[0], t[1])
@@ -49,9 +51,9 @@ def main():
     g.display_board(state)
     switch = {
          1: lambda: print(colored('⬤ ', 'white') + 'White won!'),
-        -1: lambda: print(colored('⬤ ', 'grey')  + 'Black won!'),
+        -1: lambda: print(colored('⬤ ', 'gray')  + 'Black won!'),
          2: lambda: print(colored('⬤ ', 'white') + 'White is blocked. It\'s a draw!'),
-        -2: lambda: print(colored('⬤ ', 'grey')  + 'Black is blocked. It\'s a draw!')
+        -2: lambda: print(colored('⬤ ', 'gray')  + 'Black is blocked. It\'s a draw!')
     }
     switch[g.is_final_state(state)]()
 
