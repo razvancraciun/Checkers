@@ -6,6 +6,7 @@ from time import sleep
 from termcolor import colored
 import game as g
 import strategy as s
+import time
 
 def clear():
     if name == 'nt':
@@ -17,6 +18,7 @@ INPUT_ERROR_MSG = colored('Input is invalid!', 'red') + ' Try again.'
 MOVE_ERROR_MSG = colored('Move is invalid!', 'red') + ' Try another move.'
 
 def main():
+    log = open('log.txt', 'w')
     state, msg = g.initialize(), ''
     while g.is_final_state(state) == 0:
         # display
@@ -41,11 +43,16 @@ def main():
             #     state = g.transition(state, old_pos, new_pos)
             # else:
             #     msg = MOVE_ERROR_MSG
+            starting_time = time.time()
             t = s.maximum_value(state)[0]
             state = g.transition(state, t[0], t[1])
+            log.write('Alfa-beta ' + str( (time.time() - starting_time) * 1000 ) + '\n')
         else:
+            starting_time = time.time()
             t = s.minimax(state)[0]
             state = g.transition(state, t[0], t[1])
+            log.write('Minimax ' + str( (time.time() - starting_time) * 1000 ) + '\n')
+
     # end game
     clear()
     g.display_board(state)

@@ -1,6 +1,6 @@
 import game as g
 
-def minimax(state, maximise = False, depth = 0, max_depth = 5):
+def minimax(state, maximise = False, depth = 0, max_depth = 4):
     if depth >= max_depth or g.is_final_state(state) != 0:
         return (None, g.heuristic(state))
 
@@ -19,7 +19,7 @@ def minimax(state, maximise = False, depth = 0, max_depth = 5):
 ALPHA = float('-inf')
 BETA = float('-inf')
 
-def maximum_value(state, depth = 0, max_depth = 5):
+def maximum_value(state, depth = 0, max_depth = 10):
     global ALPHA, BETA
     if depth >= max_depth or g.is_final_state(state) != 0:
         return (None, g.heuristic(state)) # here
@@ -27,10 +27,10 @@ def maximum_value(state, depth = 0, max_depth = 5):
     action = None
     for t in g.possible_transitions(state):
         succ = g.transition(state, t[0], t[1])
-        act,val = minimum_value(succ, depth + 1, max_depth)
+        _,val = minimum_value(succ, depth + 1, max_depth)
         if max_val < val:
             max_val = val
-            action = act
+            action = t
         if max_val >= BETA:
             return (action, max_val)
         ALPHA = max(max_val, ALPHA)
@@ -38,7 +38,7 @@ def maximum_value(state, depth = 0, max_depth = 5):
 
 
 
-def minimum_value(state, depth = 0, max_depth = 5):
+def minimum_value(state, depth = 0, max_depth = 8):
     global ALPHA, BETA
     if depth >= max_depth or g.is_final_state(state) != 0:
         return (None, g.heuristic(state)) # aand here
@@ -46,10 +46,10 @@ def minimum_value(state, depth = 0, max_depth = 5):
     action = None
     for t in g.possible_transitions(state):
         succ = g.transition(state, t[0], t[1])
-        act, val = maximum_value(succ, depth + 1, max_depth)
+        _, val = maximum_value(succ, depth + 1, max_depth)
         if val_min > val:
             val_min = val_min
-            action = act
+            action = t
         if ALPHA >= val_min:
             return (action, val_min)
         BETA = min(val_min, BETA)
