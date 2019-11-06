@@ -114,8 +114,6 @@ def is_valid_transition(state, old_pos, new_pos):
 # +2 - if white is blocked
 # -2 - if black is blocked
 def is_final_state(state):
-    if len(possible_transitions(state)) == 0:
-        return 2 * state[1]
     white, black = 0, 0
     for row in state[0]:
         for cell in row:
@@ -127,6 +125,8 @@ def is_final_state(state):
         return 1
     if white == 0 and black > 0:
         return -1
+    if len(possible_transitions(state)) == 0:
+        return 2 * state[1]
     return 0
 
 # check the difference in pieces but special pieces are more important
