@@ -17,8 +17,9 @@ def clear():
 INPUT_ERROR_MSG = colored('Input is invalid!', 'red') + ' Try again.'
 MOVE_ERROR_MSG = colored('Move is invalid!', 'red') + ' Try another move.'
 
+log = open('log.txt', 'w')
+
 def main():
-    log = open('log.txt', 'w')
     state, msg = g.initialize(), ''
     while g.is_final_state(state) == 0:
         # display
@@ -26,8 +27,8 @@ def main():
         print(msg)
         msg = ''
         g.display_board(state)
-        if state[1] == -1:
-            sleep(1)
+        # if state[1] == -1:
+        #     sleep(1)
         # game logic
         if state[1] == 1:
             # old_pos, new_pos = (0, 0), (0, 0)
@@ -46,21 +47,21 @@ def main():
             starting_time = time.time()
             t = s.maximum_value(state)[0]
             state = g.transition(state, t[0], t[1])
-            log.write('Alfa-beta ' + str( (time.time() - starting_time) * 1000 ) + '\n')
+            log.write('White: Minimax ' + str( (time.time() - starting_time) * 1000 ) + '\n')
         else:
             starting_time = time.time()
-            t = s.minimax(state)[0]
+            t = s.minimum_value(state)[0]
             state = g.transition(state, t[0], t[1])
-            log.write('Minimax ' + str( (time.time() - starting_time) * 1000 ) + '\n')
+            log.write('Black: Minimax ' + str( (time.time() - starting_time) * 1000 ) + '\n')
 
     # end game
     clear()
     g.display_board(state)
     switch = {
          1: lambda: print(colored('⬤ ', 'white') + 'White won!'),
-        -1: lambda: print(colored('⬤ ', 'gray')  + 'Black won!'),
+        -1: lambda: print(colored('⬤ ', 'grey')  + 'Black won!'),
          2: lambda: print(colored('⬤ ', 'white') + 'White is blocked. It\'s a draw!'),
-        -2: lambda: print(colored('⬤ ', 'gray')  + 'Black is blocked. It\'s a draw!')
+        -2: lambda: print(colored('⬤ ', 'grey')  + 'Black is blocked. It\'s a draw!')
     }
     switch[g.is_final_state(state)]()
 
