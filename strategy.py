@@ -1,4 +1,5 @@
 import game as g
+from math import inf
 
 def minimax(state, maximise = False, depth = 0, max_depth = 4):
     if depth >= max_depth or g.is_final_state(state) != 0:
@@ -16,41 +17,36 @@ def minimax(state, maximise = False, depth = 0, max_depth = 4):
         result = min(hs, key = lambda item: item[1])
         return result
 
-ALPHA = float('-inf')
-BETA = float('-inf')
-
-def maximum_value(state, depth = 0, max_depth = 10):
-    global ALPHA, BETA
+def maximum_value(state, alpha = -inf, beta = inf, depth = 0, max_depth = 2):
     if depth >= max_depth or g.is_final_state(state) != 0:
-        return (None, g.heuristic(state)) # here
-    max_val = float('-inf')
-    action = None
+        return (None, g.heuristic(state))
+
+    max_val, action = -inf, None
     for t in g.possible_transitions(state):
         succ = g.transition(state, t[0], t[1])
-        _,val = minimum_value(succ, depth + 1, max_depth)
+        _, val = minimum_value(succ, alpha, beta, depth + 1, max_depth)
         if max_val < val:
             max_val = val
             action = t
-        if max_val >= BETA:
+        if max_val >= beta:
             return (action, max_val)
-        ALPHA = max(max_val, ALPHA)
+        alpha = max(max_val, alpha)
+        
     return (action, max_val)
 
-
-
-def minimum_value(state, depth = 0, max_depth = 8):
-    global ALPHA, BETA
+def minimum_value(state, alpha = -inf, beta = inf, depth = 0, max_depth = 2):
     if depth >= max_depth or g.is_final_state(state) != 0:
-        return (None, g.heuristic(state)) # aand here
-    val_min = float('inf')
-    action = None
+        return (None, g.heuristic(state))
+
+    min_val, action = +inf, None
     for t in g.possible_transitions(state):
         succ = g.transition(state, t[0], t[1])
-        _, val = maximum_value(succ, depth + 1, max_depth)
-        if val_min > val:
-            val_min = val_min
+        _, val = maximum_value(succ, alpha, beta, depth + 1, max_depth)
+        if min_val > val:
+            min_val = min_val
             action = t
-        if ALPHA >= val_min:
-            return (action, val_min)
-        BETA = min(val_min, BETA)
-    return (action, val_min)
+        if alpha >= min_val:
+            return (action, min_val)
+        beta = min(min_val, beta)
+
+    return (action, min_val)
