@@ -17,7 +17,7 @@ def minimax(state, maximise = False, depth = 0, max_depth = 4):
         result = min(hs, key = lambda item: item[1])
         return result
 
-def maximum_value(state, alpha = -inf, beta = inf, depth = 0, max_depth = 2):
+def maximum_value(state, alpha = -inf, beta = inf, depth = 0, max_depth = 4):
     if depth >= max_depth or g.is_final_state(state) != 0:
         return (None, g.heuristic(state))
 
@@ -34,7 +34,7 @@ def maximum_value(state, alpha = -inf, beta = inf, depth = 0, max_depth = 2):
         
     return (action, max_val)
 
-def minimum_value(state, alpha = -inf, beta = inf, depth = 0, max_depth = 2):
+def minimum_value(state, alpha = -inf, beta = inf, depth = 0, max_depth = 4):
     if depth >= max_depth or g.is_final_state(state) != 0:
         return (None, g.heuristic(state))
 
@@ -43,7 +43,7 @@ def minimum_value(state, alpha = -inf, beta = inf, depth = 0, max_depth = 2):
         succ = g.transition(state, t[0], t[1])
         _, val = maximum_value(succ, alpha, beta, depth + 1, max_depth)
         if min_val > val:
-            min_val = min_val
+            min_val = val
             action = t
         if alpha >= min_val:
             return (action, min_val)
