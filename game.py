@@ -129,16 +129,48 @@ def is_final_state(state):
         return 2 * state[1]
     return 0
 
-# check the difference in pieces but special pieces are more important
+def is_safe(state, row, col):
+    # if the pieces is on the edge of the board then it is safe
+    if row in {0, BOARD_SIZE - 1}:
+        return True
+    if col in {0, BOARD_SIZE - 1}:
+        return True
+
+    # if the position is stable then it is safe
+    p = state[1]
+    if state[0][row - p][col - 1] in {-p * NPIECE, -p * SPIECE} and \
+        state[0][row + p][col + 1] == 0:
+        return False
+    if state[0][row - p][col + 1] in {-p * NPIECE, -p * SPIECE} and \
+        state[0][row + p][col - 1] == 0:
+        return False
+    if state[0][row + p][col - 1] == -p * SPIECE and \
+        state[0][row - p][col + 1] == 0:
+        return False
+    if state[0][row + p][col + 1] == -p * SPIECE and \
+        state[0][row - p][col - 1] == 0:
+        return False
+    return True
+
 # white will maximise, black will minimise
 def heuristic(state):
+
+    def safe_score(row, col):
+        return 1 if is_safe(state, row, col) else 0
+
     result = 0
     for i in range(BOARD_SIZE):
         for j in range(BOARD_SIZE):
-            if abs(state[0][i][j]) == NPIECE:
-                result += state[0][i][j]
-            elif abs(state[0][i][j]) == SPIECE:
-                result += 2 * state[0][i][j]
+            # normal pieces prioritize forward movement
+            if state[0][i][j] == NPIECE:
+                result += (BOARD_SIZE - i + 1) * state[0][i][j] + safe_score(i, j)
+            elif state[0][i][j] == -NPIECE:
+                result += (i + 1) * state[0][i][j] - safe_score(i, j)
+            # special pieces prioritize backward movement
+            elif state[0][i][j] == SPIECE:
+                result += (i + 1) * 2 * state[0][i][j] + 2 * safe_score(i, j)
+            elif state[0][i][j] == -SPIECE:
+                result += (BOARD_SIZE - i + 1) * 2 * state[0][i][j] - 2 * safe_score(i, j)
     return result
 
 def possible_transitions_normal(state):
